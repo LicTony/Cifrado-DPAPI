@@ -1,0 +1,286 @@
+﻿<Window x:Class="GenerarClaves.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GenerarClaves" 
+        xmlns:localconverts="clr-namespace:GenerarClaves.Converts"
+        mc:Ignorable="d"
+        Title="Cifrado y Descifrado DPAPI" 
+        Height="700" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FA"
+        ResizeMode="CanResizeWithGrip">
+
+    <Window.Resources>
+        <localconverts:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <!-- Estilo para TextBox moderno -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#E5E7EB" 
+                                                  BlurRadius="4" 
+                                                  ShadowDepth="0" 
+                                                  Opacity="0.5"/>
+                            </Border.Effect>
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalScrollBarVisibility="Auto"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para TextBox de solo lectura -->
+        <Style x:Key="ReadOnlyTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="Foreground" Value="#4B5563"/>
+        </Style>
+
+        <!-- Estilo para botones modernos -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#3B82F6" 
+                                                  BlurRadius="8" 
+                                                  ShadowDepth="0" 
+                                                  Opacity="0.3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#9CA3AF"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para botón secundario -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#10B981" 
+                                                  BlurRadius="8" 
+                                                  ShadowDepth="0" 
+                                                  Opacity="0.3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#059669"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#047857"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#9CA3AF"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para ComboBox -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- Estilo para etiquetas -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+    </Window.Resources>
+
+    <!-- Contenedor principal con tarjeta -->
+    <Border Background="White" 
+            CornerRadius="12" 
+            Margin="30"
+            Padding="40">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" 
+                              BlurRadius="20" 
+                              ShadowDepth="0" 
+                              Opacity="0.08"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,20" Orientation="Horizontal">
+                <TextBlock Text="🔐 Cifrado DPAPI" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           Foreground="#1F2937"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="Cifra y descifra información de forma segura usando DPAPI de Windows" 
+                           FontSize="13" 
+                           Foreground="#6B7280" 
+                           Margin="15,0,0,0"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+
+            <!-- Entropía -->
+            <TextBlock Text="🔑 Entropía (texto):"
+                       Grid.Row="1"
+                       Style="{StaticResource LabelStyle}"/>
+            <TextBox Text="{Binding EntropyText, UpdateSourceTrigger=PropertyChanged}" 
+                     Grid.Row="2" 
+                     Style="{StaticResource ModernTextBox}"
+                     Height="60"
+                     Margin="0,0,0,15"/>
+
+            <!-- Texto a cifrar/descifrar -->
+            <TextBlock Text="📝 Texto a cifrar/descifrar:" 
+                       Grid.Row="3" 
+                       Style="{StaticResource LabelStyle}"/>
+            <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" 
+                     Grid.Row="4" 
+                     Style="{StaticResource ModernTextBox}"
+                     Height="80" 
+                     TextWrapping="Wrap" 
+                     AcceptsReturn="True"
+                     Margin="0,0,0,15"/>
+
+            <!-- Resultado -->
+            <TextBlock Text="✨ Resultado:" 
+                       Grid.Row="5" 
+                       Style="{StaticResource LabelStyle}"/>
+            <TextBox Text="{Binding OutputText, UpdateSourceTrigger=PropertyChanged}" 
+                     Grid.Row="6" 
+                     Style="{StaticResource ReadOnlyTextBox}"
+                     Height="80" 
+                     TextWrapping="Wrap" 
+                     IsReadOnly="True"
+                     Margin="0,0,0,15"/>
+
+            <!-- Panel de opciones y botones -->
+            <Grid Grid.Row="7" Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Selector de alcance -->
+                <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="🎯 Alcance:" 
+                               Style="{StaticResource LabelStyle}"
+                               Margin="0,0,10,0" 
+                               VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding Scopes}" 
+                              SelectedItem="{Binding SelectedScope}" 
+                              Style="{StaticResource ModernComboBox}"
+                              Width="150"
+                              Height="36"/>
+                </StackPanel>
+
+                <!-- Botones de acción -->
+                <StackPanel Orientation="Horizontal" 
+                            Grid.Column="2" 
+                            HorizontalAlignment="Right">
+                    <Button Content="🔒 Cifrar" 
+                            Command="{Binding EncryptCommand}" 
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="0,0,15,0"
+                            MinWidth="120"/>
+                    <Button Content="🔓 Descifrar" 
+                            Command="{Binding DecryptCommand}" 
+                            Style="{StaticResource SecondaryButton}"
+                            MinWidth="120"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Mensaje de error -->
+            <Border Grid.Row="8" 
+                    Background="#FEE2E2" 
+                    BorderBrush="#EF4444"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12"
+                    Margin="0,10,0,0"
+                    Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⚠️ " 
+                               FontSize="14" 
+                               Foreground="#DC2626"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ErrorMessage}" 
+                               FontSize="13"
+                               Foreground="#DC2626" 
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
